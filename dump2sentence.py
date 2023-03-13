@@ -168,49 +168,86 @@ def remove_shorts(text):
 
 def pipeline(text):
     text =get_clean_text(text)
+    if text is None:
+        return ''
     text = remove_headings(text)
     text = remove_lists(text)
     text = remove_shorts(text)
     return text
 
-titles =[]
-pattern = re.compile("అయోమయ నివృత్తి")
-pattern = re.compile("అయోమయ నివృత్తి")
-articles = []
-tags =[]
-title=''
-buffer=[]
-buffertag=[]
-meta=[]
+def tokenizer(text,lang_code='te'):
+    sentences = sentence_tokenize.sentence_split(text, lang=lang_code)
+    return sentences
+
+file_dict={'te':'tewiki-20230301-pages-articles-multistream.xml'}
 
 
-filepath = 'tewiki-20230301-pages-articles-multistream.xml'
-for _, elem in tqdm(ET.iterparse(filepath, events=("end",))):
-    if elem.tag.endswith('text'):
-        articles.append(elem.text)
-    elif elem.tag.endswith('title'):
-        meta.append(buffer)
-        titles.append(elem.text)
-        buffer=[]
-    else:
-        try:
-            buffer.append(elem.tag+' -> '+elem.text)
-        except:
-            buffer.append(elem.tag+' -> ')
-    elem.clear()
+def read_dump(lang_code='te'):
+    titles =[]
+    articles = []
+    tags =[]
+    title=''
+    buffer=[]
+    buffertag=[]
+    meta=[]
+    filepath = file_dict[lang_code]
+    for _, elem in tqdm(ET.iterparse(filepath, events=("end",))):
+        if elem.tag.endswith('text'):
+            articles.append(elem.text)
+        elif elem.tag.endswith('title'):
+            meta.append(buffer)
+            titles.append(elem.text)
+            buffer=[]
+        else:
+            try:
+                buffer.append(elem.tag+' -> '+elem.text)
+            except:
+                buffer.append(elem.tag+' -> ')
+        elem.clear()
+    return titles,meta,articles
 
-print(len(titles))
-print(len(meta))
-print(len(articles))
+# print(len(titles))
+# print(len(meta))
+# print(len(articles))
+def remove_links(art_text):
+    matches = re.finditer(r'\[\[(.*?)\]\]',art_text)
+    clean_text =''
+    curren_index = 0
+    spans = []
+    for match in matches:
+        match_text = match.group()
+        start = match.start()
+        end = match.end()
+        
+        #Plaint text
+        clean_text+=art_text[curren_index:start]
+        
+        # Title
+        title = match_text[2:-2].split('|')[0] if '|' in match_text else match_text[2:-2]
+        surface = match_text[2:-2].split('|')[1] if '|' in match_text else match_text[2:-2]
+        spans.append([title,len(clean_text),len(clean_text)+len(surface)])
+
+        clean_text+= surface
+        curren_index = end
+    clean_text+=art_text[curren_index:]
+    return clean_text,spans
+
+def clean_article(article,lang_code='te'):
+    clean_text = pipeline(article)
+    if clean_text=='':
+        return None
+    sentences = tokenizer(clean_text,lang_code)
+    data=[]
+    for sentence in sentences:
+        text,spans = remove_links(sentence)
+        data.append([text,spans])
+    return data
+
+clean_dump={}
+for lang_code in file_dict.keys():
+    titles,meta,articles = read_dump(lang_code)
+    clean_dump[lang_code] = [clean_article(i) for i in tqdm(articles)]
 
 
-def show_article(idx):
-    print(titles[idx])
-    print('**********************')
-    print(meta[idx])
-    print('**********************')
-    print(articles[idx])
-    print('**********************')
-    print(pipeline(articles[idx]))
-
-show_article(21304)
+import pickle
+pickle.dump(clean_dump,open('clean_dump.pkl','wb'))
