@@ -2,6 +2,8 @@ from tqdm import tqdm
 from copy import deepcopy
 from xml.etree import ElementTree as ET
 import re
+from indicnlp.tokenize import sentence_tokenize
+
 
 def get_unpiped_text(art_text):
     matches = re.finditer(r'\[\[(.*?)\]\]',art_text)
@@ -137,6 +139,39 @@ def get_add_clean(art_text):
     return art_text
 
 
+def remove_headings(text):
+    ans=""
+    for line in text.split("\n"):
+        if line.startswith("="):
+            continue
+        ans+=line
+        ans+="\n"
+    return ans
+
+def remove_lists(text):
+    ans=""
+    for line in text.split("\n"):
+        if line.startswith("*"):
+            continue
+        ans+=line
+        ans+="\n"
+    return ans
+
+def remove_shorts(text):
+    ans=""
+    for line in text.split("\n"):
+        if len(line)<=20:
+            continue
+        ans+=line
+        ans+="\n"
+    return ans
+
+def pipeline(text):
+    text =get_clean_text(text)
+    text = remove_headings(text)
+    text = remove_lists(text)
+    text = remove_shorts(text)
+    return text
 
 titles =[]
 pattern = re.compile("అయోమయ నివృత్తి")
@@ -175,6 +210,7 @@ def show_article(idx):
     print(meta[idx])
     print('**********************')
     print(articles[idx])
-    print(get_clean_text(articles[idx]))
+    print('**********************')
+    print(pipeline(articles[idx]))
 
-import pdb;pdb.set_trace()
+show_article(21304)
