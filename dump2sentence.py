@@ -160,7 +160,7 @@ def remove_lists(text):
 def remove_shorts(text):
     ans=""
     for line in text.split("\n"):
-        if len(line)<=20:
+        if len(line)<=50:
             continue
         ans+=line
         ans+="\n"
@@ -224,12 +224,16 @@ def remove_links(art_text):
         
         # Title
         title = match_text[2:-2].split('|')[0] if '|' in match_text else match_text[2:-2]
+        if ':' in title:
+            return None,[]
         surface = match_text[2:-2].split('|')[1] if '|' in match_text else match_text[2:-2]
         spans.append([title,len(clean_text),len(clean_text)+len(surface)])
 
         clean_text+= surface
         curren_index = end
     clean_text+=art_text[curren_index:]
+    if '\n' in clean_text:
+        return None,[]
     return clean_text,spans
 
 def clean_article(article,lang_code='te'):
@@ -240,14 +244,38 @@ def clean_article(article,lang_code='te'):
     data=[]
     for sentence in sentences:
         text,spans = remove_links(sentence)
-        data.append([text,spans])
+        data.append([text,spans] if len(spans)>0 else None)
     return data
 
+
+
+delimiter ='\t'
+delimiter2 ='\t\t'
 clean_dump={}
+
 for lang_code in file_dict.keys():
-    titles,meta,articles = read_dump(lang_code)
-    clean_dump[lang_code] = [clean_article(i) for i in tqdm(articles)]
+    with open('final_data_'+lang_code,'w') as f:
+        titles,meta,articles = read_dump(lang_code)
+        for i,j in tqdm(zip(articles,titles)):
+            if 'మీడియావికీ' in j or 'Homepage' in j or 'వికీపీడియా' in j:
+                continue
+            try:
+                data = clean_article(i)
+                for dat in data:
+                    if dat is not None:
+                        f.write(lang_code)
+                        f.write(delimiter)
+                        f.write(j)
+                        f.write(delimiter)
+                        f.write(dat[0])
+                        f.write(delimiter)
+                        f.write(str(dat[1]))
+                        f.write(delimiter2)
+                        f.write('\n')
+            except:
+                pass
+    # clean_dump[lang_code] = [clean_article(i) for i in tqdm(articles)]
 
 
-import pickle
-pickle.dump(clean_dump,open('clean_dump.pkl','wb'))
+# import pickle
+# pickle.dump(clean_dump,open('clean_dump.pkl','wb'))
