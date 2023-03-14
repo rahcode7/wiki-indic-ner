@@ -33,16 +33,17 @@ def get_wikimedia_ids(entity,language):
     response = requests.get(url, params=params)
     data = response.json()
     #print(data)
-    
-    p = dict(data['query']['pages'])
-    for i in p.keys():
-        if int(i) < 0:
-            d[p[i]['title']] = -1
-        else:
-            try:
-                d[p[i]['title']] = p[i]['pageprops']['wikibase_item']
-            except:
-                pass
+
+    if data is not None:
+        p = dict(data['query']['pages'])
+        for i in p.keys():
+            if int(i) < 0:
+                d[p[i]['title']] = -1
+            else:
+                try:
+                    d[p[i]['title']] = p[i]['pageprops']['wikibase_item']
+                except:
+                    pass
 
     #print(d)
     return(d)
