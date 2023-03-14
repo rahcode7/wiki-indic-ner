@@ -3,6 +3,7 @@ from copy import deepcopy
 from xml.etree import ElementTree as ET
 import re
 import pandas as pd 
+import os 
 from indicnlp.tokenize import sentence_tokenize
 
 
@@ -180,10 +181,12 @@ def tokenizer(text,lang_code='te'):
     sentences = sentence_tokenize.sentence_split(text, lang=lang_code)
     return sentences
 
-file_dict={'pa':'../data-wikidumps/pawiki-20230301-pages-articles-multistream.xml'}
+# file_dict={'pa':'../data-wikidumps/pawiki-20230301-pages-articles-multistream.xml',
+#             ''
+# }
 
 
-def read_dump(lang_code='te'):
+def read_dump(lang_code,file_dict):
     titles =[]
     articles = []
     tags =[]
@@ -256,65 +259,41 @@ clean_dump={}
 
 
 
-#x = 0 
-# for lang_code in file_dict.keys():
-#     with open('../data-wikidumps/clean-dumps/sentence_data_ent_'+lang_code +'.txt' ,'w') as f:
-#         titles,meta,articles = read_dump(lang_code)
-#         for i,j in tqdm(zip(articles,titles)):
-#             print(i,j)
-#             #x+=20
-#             #if x >20:
-#                 #break
-#             if 'మీడియావికీ' in j or 'Homepage' in j or 'వికీపీడియా' in j:
-#                 continue
-#             try:
-#                 data = clean_article(i)
-#                 #print(data)
-#                 for dat in data:
-#                     # print
-#                     print(dat)
-#                     if dat is not None:
-#                         f.write(lang_code)
-#                         f.write(delimiter)
-#                         f.write(j)
-#                         f.write(delimiter)
-#                         f.write(dat[0])
-#                         f.write(delimiter)
-#                         f.write(str(dat[1]))
-#                         f.write(delimiter2)
-#                         f.write('\n')
+path = "/Users/rahulmehta/Desktop/IndicNER/data-wikidumps/"
 
-#                     if data is not None 
+file_dict = {}
+file_list = []
+for root, dirs, files in os.walk(path + 'raw-dumps/'):
+    file_list = [n for n in files]
 
-#             except:
-#                 pass
-    # clean_dump[lang_code] = [clean_article(i) for i in tqdm(articles)]
-
+for f in file_list:
+    file_dict[f[0:2]] = path + 'raw-dumps/' + f
+print(file_dict)
 
 
 art_list = []
-for lang_code in file_dict.keys():
-    with open('../data-wikidumps/clean-dumps/sentence_data_ent_'+lang_code +'.txt' ,'w') as f:
-        titles,meta,articles = read_dump(lang_code)
-        for i,j in tqdm(zip(articles,titles)):
-            if 'మీడియావికీ' in j or 'Homepage' in j or 'వికీపీడియా' in j:
-                continue
-            try:
-                data = clean_article(i)
-                
-                #print(data)
-                for dat in data:
-                    d = {}
-                    if dat is not None:
-                       d['lang_code'] = lang_code
-                       d['title'] = j
-                       d['sentence'] = dat[0]
-                       d['entity'] = str(dat[1])
+for i,(lang_code,val) in enumerate(file_dict.items()):
+    print(lang_code)
+    titles,meta,articles = read_dump(lang_code,file_dict)
+    for i,j in tqdm(zip(articles,titles)):
+        j = j.lower()
+        if 'మీడియావికీ' in j or 'Homepage' in j or 'వికీపీడియా' in j or 'मीडियाविकी' in j or 'ਮੀਡੀਆਵਿਕੀ' in j or ':' in j or 'மீடியாவிக்கி' in j or 'મીડિયાવિકિ' in j or 'mediawiki' in j or 'മീഡിയവിക്കി' in j or 'ಮೀಡಿಯಾವಿಕಿ' in j or 'विकिपीडिया' in j or 'ৱিকিপিডিয়া' in j or 'ਵਿਕੀਪੀਡੀਆ' in j or 'વિકિપીડિયા' in j or 'വിക്കിപീഡിയ' in j or 'ವಿಕಿಪೀಡಿಯ' in j or 'விக்கிபீடியா' in j:
+            continue
+        try:
+            data = clean_article(i)
+            #print(data)
+            for dat in data:
+                d = {}
+                if dat is not None:
+                    d['lang_code'] = lang_code
+                    d['title'] = j
+                    d['sentence'] = dat[0]
+                    d['entity'] = str(dat[1])
                     
                     if bool(d):
                         art_list.append(d)
-            except:
-                pass
-   
-art_df = pd.DataFrame.from_dict(art_list)
-art_df.to_csv("../data-wikidumps/clean-dumps/sentence_data_ent_pa.csv",index=None)
+        except:
+            pass
+
+    art_df = pd.DataFrame.from_dict(art_list)
+    art_df.to_csv(path + f"clean-dumps/sentence_data_ent_{lang_code}.csv",index=None)
