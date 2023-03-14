@@ -8,12 +8,12 @@ def get_wikimedia_ids(entity,language):
     piped = ""
     #print(len(entity))
     for item in entity:
-        piped += item + "|"
+        piped += str(item) + "|"
     #print(piped)
 
     #language = "hi"
     url = f'https://{language}.wikipedia.org/w/api.php'
-    print(url)
+    #print(url)
     params = {
             'action': 'query',
             'format': 'json',
