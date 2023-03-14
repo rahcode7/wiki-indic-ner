@@ -2,26 +2,31 @@ import requests
 from collections import defaultdict
 
 # Get list of entities and produced entity:qid pairs
-def get_wikimedia_id(subject,language):  
+def get_wikimedia_ids(entity,language):  
 
     #subject = "बम्बई|दिल्ली|बम्बई|महेंद्र सिंह ठाकुर"
+    piped = ""
+    #print(len(entity))
+    for item in entity:
+        piped += item + "|"
+    #print(piped)
 
+    #language = "hi"
     url = f'https://{language}.wikipedia.org/w/api.php'
     print(url)
     params = {
             'action': 'query',
             'format': 'json',
-            'titles': "बम्बई|दिल्ली",
+            'titles': piped,
             'prop': 'pageprops',
             'ppprop' :'wikibase_item',
             'exintro': True,
             #'explaintext': True,
-            'redirects' :1
-            
+            'redirects' :1   
         }
     
     d = defaultdict()
-    print(d)
+    #print(d)
 
     # for i in range(3):
     #     print(i)
@@ -31,9 +36,13 @@ def get_wikimedia_id(subject,language):
     
     p = dict(data['query']['pages'])
     for i in p.keys():
-        print(i)
-        d[p[i]['title']] = p[i]['pageprops']['wikibase_item']
+        if int(i) < 0:
+            d[p[i]['title']] = -1
+        else:
+            try:
+                d[p[i]['title']] = p[i]['pageprops']['wikibase_item']
+            except:
+                pass
 
-    print(d)
+    #print(d)
     return(d)
-
