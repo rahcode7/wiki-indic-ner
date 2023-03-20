@@ -261,39 +261,48 @@ clean_dump={}
 
 path = "/Users/rahulmehta/Desktop/IndicNER/data-wikidumps/"
 
-file_dict = {}
-file_list = []
-for root, dirs, files in os.walk(path + 'raw-dumps/'):
-    file_list = [n for n in files]
+# file_dict = {}
+# file_list = []
+# for root, dirs, files in os.walk(path + 'raw-dumps/'):
+#     file_list = [n for n in files]
 
-for f in file_list:
-    file_dict[f[0:2]] = path + 'raw-dumps/' + f
-print(file_dict)
+# for f in file_list:
+#     file_dict[f[0:2]] = path + 'raw-dumps/' + f
+# print(file_dict)
+
+
+file_dict={'en':'../data-wikidumps/raw-dumps/enwiki-20230301-pages-articles-multistream.xml'}
 
 
 art_list = []
 for i,(lang_code,val) in enumerate(file_dict.items()):
-    print(lang_code)
-    titles,meta,articles = read_dump(lang_code,file_dict)
-    for i,j in tqdm(zip(articles,titles)):
-        j = j.lower()
-        if 'మీడియావికీ' in j or 'Homepage' in j or 'వికీపీడియా' in j or 'मीडियाविकी' in j or 'ਮੀਡੀਆਵਿਕੀ' in j or ':' in j or 'மீடியாவிக்கி' in j or 'મીડિયાવિકિ' in j or 'mediawiki' in j or 'മീഡിയവിക്കി' in j or 'ಮೀಡಿಯಾವಿಕಿ' in j or 'विकिपीडिया' in j or 'ৱিকিপিডিয়া' in j or 'ਵਿਕੀਪੀਡੀਆ' in j or 'વિકિપીડિયા' in j or 'വിക്കിപീഡിയ' in j or 'ವಿಕಿಪೀಡಿಯ' in j or 'விக்கிபீடியா' in j:
-            continue
-        try:
-            data = clean_article(i)
-            #print(data)
-            for dat in data:
-                d = {}
-                if dat is not None:
-                    d['lang_code'] = lang_code
-                    d['title'] = j
-                    d['sentence'] = dat[0]
-                    d['entity'] = str(dat[1])
-                    
-                    if bool(d):
-                        art_list.append(d)
-        except:
-            pass
+    if lang_code == 'en':
+        print(lang_code)
+        titles,meta,articles = read_dump(lang_code,file_dict)
+        for i,j in tqdm(zip(articles,titles)):
+            j = j.lower()
+            if 'మీడియావికీ' in j or 'Homepage' in j or 'వికీపీడియా' in j or 'मीडियाविकी' in j or 'ਮੀਡੀਆਵਿਕੀ' in j or ':' in j or 'மீடியாவிக்கி' in j or 'મીડિયાવિકિ' in j or 'mediawiki' in j or 'മീഡിയവിക്കി' in j or 'ಮೀಡಿಯಾವಿಕಿ' in j or 'विकिपीडिया' in j or 'ৱিকিপিডিয়া' in j or 'ਵਿਕੀਪੀਡੀਆ' in j or 'વિકિપીડિયા' in j or 'വിക്കിപീഡിയ' in j or 'ವಿಕಿಪೀಡಿಯ' in j or 'விக்கிபீடியா' in j:
+                continue
+            try:
+                data = clean_article(i)
+                #print(data)
+                for dat in data:
+                    d = {}
+                    if dat is not None:
+                        d['lang_code'] = lang_code
+                        d['title'] = j
+                        d['sentence'] = dat[0]
+                        d['entity'] = str(dat[1])
+                        
+                        if bool(d):
+                            art_list.append(d)
+            except:
+                pass
 
+<<<<<<< Updated upstream
     art_df = pd.DataFrame.from_dict(art_list)
     art_df.to_csv(path + f"clean-dumps/sentence_data_ent_{lang_code}.csv",index=None)
+=======
+        art_df = pd.DataFrame.from_dict(art_list)
+        art_df.to_csv(path + f"clean-dumps/sentence_data_ent_{lang_code}.csv",index=None)
+>>>>>>> Stashed changes

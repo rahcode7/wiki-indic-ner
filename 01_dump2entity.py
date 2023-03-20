@@ -8,7 +8,13 @@ from tqdm import tqdm
 tqdm.pandas()
 
 
+<<<<<<< Updated upstream
 MASTER_ENT = set()
+=======
+#language = 'pa','as','bn'
+language_list = ['gu','hi','kn','te','ta','ml','mr','or']
+
+>>>>>>> Stashed changes
 
 def get_master_entity(entity):
     entity_list = list(ast.literal_eval(entity))
@@ -50,9 +56,27 @@ if __name__ == "__main__":
         #print(master_ent[0:5])
 
         # In batch of 50, crawl mediawiki
+<<<<<<< Updated upstream
         for i in tqdm(range(0,len(master_ent),50)):
             #print(master_ent[i:i+49])
             master_ent_ids.update(get_wikimedia_ids(master_ent[i:i+49],language))
+=======
+        #for i in tqdm(range(0,len(master_ent),50)):
+        for i in tqdm(range(0,6000,50)):
+        
+            print(i)
+            master_ent_ids.update(get_wikimedia_ids(master_ent[i:i+49],'pa'))
+>>>>>>> Stashed changes
+
+            # save dict every 5000
+            if i % 5000 == 0 :
+                with open(dir + f'entity-master-ids/{language}-entity-qids.json',"w") as outfile:
+                    json.dump(master_ent_ids,outfile,ensure_ascii=False)
+
+
+                f =  open(dir + f'/entity-master-ids/{language}-entity-qids.json') 
+                master_ent_ids = json.load(f)
+
 
         print(len(master_ent_ids))
         #print(master_ent_ids)
