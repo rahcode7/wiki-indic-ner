@@ -25,10 +25,10 @@ for lang in language_list:
     with open(INPUT_PATH + f'{lang}-conll.txt') as f,open(OUTPUT_REF_PATH  + lang + '/' + f'{lang}-full.conll','a') as f1:
         for line in f:
             #print(line)
-            if ("id") not in line: 
+            if " id " not in line: 
                 new_line = line.replace("__"," _ _ ")
             else:
-                if("id") in line:
+                if " id " in line:
                     langcount+=1
                     new_line = line[0:4] + ' ' + str(langcount)  + '\n' # ' ' + line[10:]
                 else:

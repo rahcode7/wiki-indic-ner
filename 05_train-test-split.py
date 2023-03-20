@@ -37,11 +37,13 @@ for lang in language_list:
 
     with open(INPUT_PATH + lang + '/' + f'{lang}-full.conll') as f, open(OUTPUT_REF_PATH  + lang + '/' + f'{lang}-train.conll','w') as f1,open(OUTPUT_REF_PATH  + lang + '/' + f'{lang}-dev.conll','w') as f2,open(OUTPUT_REF_PATH  + lang + '/' + f'{lang}-test.conll','w') as f3:
         for line in f:
-            if "id" in line :
+            if " id " in line :
                 #print(line)
                 new_line = line
+                #print(new_line)
+                #print(line[5:])
                 cnt = int(line[5:])
-                #print(cnt)        
+                #print(cnt)      
             else:
                 new_line = line 
             
