@@ -27,10 +27,9 @@ for lang in language_list:
     # df1.append({'language' : lang, 'train_count' :train_size , 'dev_count' : dev_size,'test_count': sent_count[lang]-(train_size+dev_size)},
     #     ignore_index = True)
 
-    dict = {'language' : lang, 'train_count' :train_size , 'dev_count' : dev_size,'test_count': test_size}
-    df1 = pd.DataFrame([dict])
-    df = pd.concat([df, df1], ignore_index = True)
-    print(df)
+    train_count = 0 
+    test_count = 0 
+    dev_count = 0 
 
     if not os.path.exists(OUTPUT_REF_PATH  + lang):
             os.makedirs(OUTPUT_REF_PATH  + lang)
@@ -46,20 +45,51 @@ for lang in language_list:
                 #print(cnt)      
             else:
                 new_line = line 
+
+            if "_O" in line:
+                continue
+
+        
+            # if isinstance(line, bytes):
+            #     print(line)
+            #     line.decode('ascii') 
+            #     continue
+            # else: 
+            #     print("not uni")
+
+            punctuations = '''!()[]{};:'"\,<>./?@$%^&*~'''
+            p = False
+            for char in line:
+                if char in punctuations:
+                    p = True
+                continue
             
+            if p:
+                continue
+
             if cnt <= train_size:
                 # Write in train 
                 #with open(OUTPUT_REF_PATH  + lang + '/' + f'{lang}-train.conll','a') as f1:
+
+                if 'B-ORG' in new_line or 'B-LOC' in new_line or 'B-PER' in new_line or 'I-ORG' in new_line or 'I-PER' in new_line or 'I-LOC' in new_line:
+                    train_count +=1
+
                 f1.write(new_line)
 
             elif cnt >= train_size and cnt <= train_size + dev_size:
                 # Write in train 
                 #with open(OUTPUT_REF_PATH  + lang + '/' + f'{lang}-dev.conll','a') as f2:
                     #json.dump(d,fp,ensure_ascii=False)
+                if 'B-ORG' in new_line or 'B-LOC' in new_line or 'B-PER' in new_line or 'I-ORG' in new_line or 'I-PER' in new_line or 'I-LOC' in new_line:
+                    dev_count +=1
+
                 f2.write(new_line)
                     #fp.write('\n')
             
             elif cnt > train_size + dev_size and cnt <= sent_count[lang]:
+
+                if 'B-ORG' in new_line or 'B-LOC' in new_line or 'B-PER' in new_line or 'I-ORG' in new_line or 'I-PER' in new_line or 'I-LOC' in new_line:
+                    test_count +=1
                 # Write in train 
                 #with open(OUTPUT_REF_PATH  + lang + '/' + f'{lang}-test.conll','a') as f3:
                     #json.dump(d,fp,ensure_ascii=False)
@@ -68,9 +98,16 @@ for lang in language_list:
             else:
                 continue
 
-        
+    dict = {'language' : lang, 'train_count' :train_count , 'dev_count' : dev_count,'test_count': test_count}
+    df1 = pd.DataFrame([dict])
+    df = pd.concat([df, df1], ignore_index = True)
+    print(df)
+    
 
-df.to_csv(OUTPUT_REF_PATH+'dataset-sizes.csv',index=None)
+
+df['total_entities'] = df['train_count'] + df['dev_count'] + df['test_count']
+print(df['total_entities'].sum())
+df.to_csv(OUTPUT_REF_PATH+'dataset-sizes-entities.csv',index=None)
 
 
 
